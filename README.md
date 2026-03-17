@@ -20,6 +20,8 @@ To prevent that, you need to set up your install manually:
 
 Once set up this way, the launcher will no longer overwrite your files. A workaround that avoids this setup entirely is being worked on for a future update.
 
+**I am working on a simple video + written walkthrough tutorial for setting this up.**
+
 ---
 
 ## 🔴 Run as Administrator
@@ -49,9 +51,16 @@ To avoid doing this every time, right-click the exe → **Properties** → **Com
 
 ---
 
-## 🚀 Quick Start
+## 📁 Direct Install (Recommended, quicker)
 
-1. Go to the **Releases** page on this GitHub repository and download **CHMenuChanger.zip** from the latest release.
+1. Go to the **Releases** page on this github repository and download **CHMenuChanger_Installer.exe** from the latest release.
+2. Double click **CHMenuChanger_Installer.exe** to open the installer.
+3. By default it will install to the root of your `C:` drive. Feel free ti change it.
+4. Continue through the rest of the prompt until it finishes installing. Now you can open your start menu and launch "CHMenuChanger". 
+
+## 🚀 Portable Quick Start
+
+1. Go to the **Releases** page on this GitHub repository and download **CHMenuChanger_Portable.zip** from the latest release.
 2. Extract the ZIP anywhere on your PC — your Desktop, a games folder, wherever you like.
 3. Double-click **CHMenuChanger.exe** to launch. No install, no Python, nothing else needed.
 4. Click **Browse** and select your `Clone Hero_Data` folder (usually at `Documents\Clone Hero\Clone Hero_Data`).
