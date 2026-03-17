@@ -1,6 +1,6 @@
 # 🎨 CHMenuChanger by JURMR
 
-Swap out Clone Hero's menu background textures without touching a single config file. Built on top of UnityPy for direct asset editing — no UABEA CLI required.
+Swap out Clone Hero's menu background textures without touching a single config file. Built on top of UnityPy for direct asset editing.
 
 [![Platform](https://img.shields.io/badge/platform-Windows-blue)](https://github.com/iamjrmh/CHMenuChanger)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/iamjrmh/CHMenuChanger)
