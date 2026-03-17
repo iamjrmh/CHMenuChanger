@@ -51,12 +51,30 @@ To avoid doing this every time, right-click the exe → **Properties** → **Com
 
 ---
 
+## Important [Read before install]
+
+Prerequisites: 
+- Make sure Clone Hero is closed
+- Make sure you launch as administrator
+- Keep backups. This tool does keep backups but it's always a good idea to keep an extra backup.
+
+Disclaimer:
+While this process is usually non-destructive, using this tool may cause some irreversible damage. I do not take any responsibilty for any damages this may cause.
+
+---
+
 ## 📁 Direct Install (Recommended, quicker)
 
 1. Go to the **Releases** page on this github repository and download **CHMenuChanger_Installer.exe** from the latest release.
 2. Double click **CHMenuChanger_Installer.exe** to open the installer.
 3. By default it will install to the root of your `C:` drive. Feel free to change it.
-4. Continue through the rest of the prompt until it finishes installing. Now you can open your start menu and launch "CHMenuChanger". 
+4. Continue through the rest of the prompt until it finishes installing. Now you can open your start menu and launch "CHMenuChanger".
+5. Click Browse and select your Clone Hero_Data folder (usually at Documents\Clone Hero\Clone Hero_Data).
+6. Click Load & Scan — the tool scans all asset files and creates backups automatically.
+7. Select a background from the left panel.
+8. Click Choose Replacement and pick your image.
+9. Click Apply & Save to write the changes directly to your game files.
+10. Open Clone Hero to see the result.
 
 ## 🚀 Portable Quick Start
 
@@ -68,7 +86,7 @@ To avoid doing this every time, right-click the exe → **Properties** → **Com
 6. Select a background from the left panel.
 7. Click **Choose Replacement** and pick your image.
 8. Click **Apply & Save** to write the changes directly to your game files.
-9. Restart Clone Hero to see the result.
+9. Open Clone Hero to see the result.
 
 ---
 
