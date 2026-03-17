@@ -65,6 +65,11 @@ To avoid doing this every time, right-click the exe → **Properties** → **Com
 
 ## 📸 Examples
 
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu1.png)
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu2.png)
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu3.png)
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu4.png)
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu5.png)
 ![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/1.png)
 ![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/2.png)
 ![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/3.png)
