@@ -76,7 +76,7 @@ While this process is usually non-destructive, using this tool may cause some ir
 9. Click Apply & Save to write the changes directly to your game files.
 10. Open Clone Hero to see the result.
 
-## 🚀 Portable Quick Start
+## 🚀 Portable Install
 
 1. Go to the **Releases** page on this GitHub repository and download **CHMenuChanger_Portable.zip** from the latest release.
 2. Extract the ZIP anywhere on your PC — your Desktop, a games folder, wherever you like.
