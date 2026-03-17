@@ -491,15 +491,39 @@ class AssetManager:
     def import_image(self, asset_name, pil):
         d = self._data.get(asset_name)
         if d is None:
-            print("[import_image] not in cache:", asset_name)
+            _log("[import_image] not in cache: {}".format(asset_name))
             return False
+
+        rgba = pil.convert("RGBA")
+        # Unity stores textures flipped -- flip before writing back
+        from PIL import Image as _Image
+        rgba = rgba.transpose(_Image.FLIP_TOP_BOTTOM)
+
+        import traceback
+
+        # Try set_image() first (UnityPy 1.20+ API, avoids the dynlib loader
+        # that pulls in FMOD and crashes in frozen exes)
         try:
-            d.image = pil.convert("RGBA")
+            if hasattr(d, "set_image"):
+                d.set_image(rgba)
+                d.save()
+                self._dirty.add(asset_name)
+                _log("[WRITE OK] set_image: {}".format(asset_name))
+                return True
+        except Exception as e:
+            _log("[WRITE FAIL] set_image for \'{}\': {}".format(asset_name, e))
+            _log("[WRITE FAIL] traceback:\n" + traceback.format_exc())
+
+        # Fallback: property setter (works in script mode)
+        try:
+            d.image = rgba
             d.save()
             self._dirty.add(asset_name)
+            _log("[WRITE OK] image= setter: {}".format(asset_name))
             return True
         except Exception as e:
-            print("[import_image]", asset_name, e)
+            _log("[WRITE FAIL] image= setter for \'{}\': {}".format(asset_name, e))
+            _log("[WRITE FAIL] traceback:\n" + traceback.format_exc())
             return False
 
     # -- Backup helpers --------------------------------------------------------
@@ -1446,6 +1470,7 @@ class App(tk.Tk):
         def worker():
             errors  = []
             applied = 0
+            _log("\n=== WRITE SESSION START ({} replacements) ===".format(len(reps)))
             for bg, img_path in reps.items():
                 an = self._asset_cache.get(bg)
                 if not an:

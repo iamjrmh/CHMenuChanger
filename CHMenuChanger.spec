@@ -37,6 +37,14 @@ etcpak_d,     etcpak_b,       etcpak_h     = _safe_collect("etcpak")
 # at runtime (archspec/json/cpu/microarchitectures.json)
 archspec_d,   archspec_b,     archspec_h   = _safe_collect("archspec")
 
+# -- fmod_toolkit + pyfmodex --------------------------------------------------
+# UnityPy.export.__init__ imports AudioClipConverter at module level, which
+# imports fmod_toolkit, which loads fmod.dll via pyfmodex.  The DLL lives at
+# fmod_toolkit/libfmod/Windows/x64/fmod.dll -- collect_all preserves this
+# exact directory structure so PyInstaller's ctypes hook finds it.
+fmod_d,       fmod_b,         fmod_h       = _safe_collect("fmod_toolkit")
+pyfmod_d,     pyfmod_b,       pyfmod_h     = _safe_collect("pyfmodex")
+
 # -- Explicit top-level .pyd copies (the key fix for "Could not decode") ------
 # These are resolved at spec-generation time to the exact versioned filename
 # (e.g. texture2ddecoder.cp311-win_amd64.pyd) and placed at the root of
@@ -48,13 +56,15 @@ _etcpak_forced = [('E:\\Downloads\\CHMenuChanger\\.venv\\Lib\\site-packages\\etc
 all_datas = (
     up_datas + pil_datas +
     brotli_d + brotlicffi_d + lz4_d +
-    t2d_d + etcpak_d + archspec_d
+    t2d_d + etcpak_d + archspec_d +
+    fmod_d + pyfmod_d
 )
 
 all_binaries = (
     up_binaries + pil_binaries +
     brotli_b + brotlicffi_b + lz4_b +
     t2d_b + etcpak_b + archspec_b +
+    fmod_b + pyfmod_b +              # fmod.dll with correct nested path
     _t2d_forced +    # exact versioned .pyd at top level
     _etcpak_forced
 )
@@ -63,6 +73,7 @@ all_hidden = list(set(
     up_hidden + pil_hidden +
     brotli_h + brotlicffi_h + lz4_h +
     t2d_h + etcpak_h + archspec_h +
+    fmod_h + pyfmod_h +
 
     # UnityPy 1.25.0 full submodule tree
     collect_submodules("UnityPy") +
@@ -75,6 +86,8 @@ all_hidden = list(set(
     collect_submodules("UnityPy.export") +
     collect_submodules("UnityPy.math") +
     collect_submodules("UnityPy.downloader") +
+    collect_submodules("fmod_toolkit") +
+    collect_submodules("pyfmodex") +
 
     # Pillow plugins
     collect_submodules("PIL") +
