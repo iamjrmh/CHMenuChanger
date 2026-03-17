@@ -82,7 +82,7 @@ To avoid doing this every time, right-click the exe → **Properties** → **Com
 
 | Name | Min Size | Source File |
 |---|---|---|
-| Black | 1920x1080 | sharedassets1.assets |
+| Black | 1920x1080 (Uneditable) | sharedassets1.assets |
 | Spray | 1920x1080 | sharedassets1.assets |
 | Pastel Burst | 1920x1080 | sharedassets1.assets |
 | Groovy | 1920x1080 | sharedassets1.assets |
