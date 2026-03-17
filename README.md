@@ -65,29 +65,16 @@ To avoid doing this every time, right-click the exe → **Properties** → **Com
 
 ## 📸 Examples
 
+<h2 align="center">Menu Preview</h2>
 <p align="center">
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu1.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu1.png" width="200"></a>
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu2.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu2.png" width="200"></a>
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu3.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu3.png" width="200"></a>
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu4.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu4.png" width="200"></a>
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu5.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu5.png" width="200"></a>
+  <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu.gif">
 </p>
 
+<h2 align="center">Clone Hero Preview</h2>
 <p align="center">
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/1.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/1.png" width="200"></a>
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/2.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/2.png" width="200"></a>
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/3.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/3.png" width="200"></a>
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/4.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/4.png" width="200"></a>
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/5.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/5.png" width="200"></a>
+  <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/CHMenu.gif">
 </p>
 
-<p align="center">
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/6.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/6.png" width="200"></a>
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/7.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/7.png" width="200"></a>
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/8.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/8.png" width="200"></a>
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/9.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/9.png" width="200"></a>
-  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/10.png"><img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/10.png" width="200"></a>
-</p>
 ---
 
 ## 🖼️ Supported Backgrounds
