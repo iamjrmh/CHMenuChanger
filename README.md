@@ -69,7 +69,7 @@ While this process is usually non-destructive, using this tool may cause some ir
 2. Double click **CHMenuChanger_Installer.exe** to open the installer.
 3. By default it will install to the root of your `C:` drive. Feel free to change it.
 4. Continue through the rest of the prompt until it finishes installing. Now you can open your start menu and launch "CHMenuChanger".
-5. Click Browse and select your Clone Hero_Data folder (usually at Documents\Clone Hero\Clone Hero_Data).
+5. Click Browse and select your Clone Hero_Data folder (usually at Documents\Clone Hero\Clone Hero_Data. If not, go to your Clone Hero installation folder that contains the .exe. That folder has your data folder).
 6. Click Load & Scan — the tool scans all asset files and creates backups automatically.
 7. Select a background from the left panel.
 8. Click Choose Replacement and pick your image.
@@ -81,7 +81,7 @@ While this process is usually non-destructive, using this tool may cause some ir
 1. Go to the **[Releases](https://github.com/iamjrmh/CHMenuChanger/releases)** page on this GitHub repository and download **CHMenuChanger_Portable.zip** from the [latest release](https://github.com/iamjrmh/CHMenuChanger/releases/latest/download/CHMenuChanger_Portable.zip).
 2. Extract the ZIP anywhere on your PC — your Desktop, a games folder, wherever you like.
 3. Double-click **CHMenuChanger.exe** to launch. No install, no Python, nothing else needed.
-4. Click **Browse** and select your `Clone Hero_Data` folder (usually at `Documents\Clone Hero\Clone Hero_Data`).
+4. Click Browse and select your `Clone Hero_Data` folder (usually at `Documents\Clone Hero\Clone Hero_Data`. If not, go to your Clone Hero installation folder that contains the .exe. That folder has your data folder).
 5. Click **Load & Scan** — the tool scans all asset files and creates backups automatically.
 6. Select a background from the left panel.
 7. Click **Choose Replacement** and pick your image.
