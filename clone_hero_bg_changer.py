@@ -495,9 +495,8 @@ class AssetManager:
             return False
 
         rgba = pil.convert("RGBA")
-        # Unity stores textures flipped -- flip before writing back
-        from PIL import Image as _Image
-        rgba = rgba.transpose(_Image.FLIP_TOP_BOTTOM)
+        # NOTE: do NOT flip here -- set_image() handles Unity's bottom-up
+        # storage format internally. Flipping here would double-flip it.
 
         import traceback
 
