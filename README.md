@@ -50,6 +50,21 @@ Once set up this way, the launcher will no longer overwrite your files. A workar
 
 ---
 
+## 📸 Examples
+
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/1.png)
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/2.png)
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/3.png)
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/4.png)
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/5.png)
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/6.png)
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/7.png)
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/8.png)
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/9.png)
+![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/10.png)
+
+---
+
 ## 🖼️ Supported Backgrounds
 
 | Name | Min Size | Source File |
@@ -135,7 +150,7 @@ MIT License - free to use, modify, and distribute.
 
 - [Clone Hero](https://clonehero.net/) - The rhythm game this tool supports
 - [CHColorGen](https://github.com/iamjrmh/CHColorGen) - Colored name generator for Clone Hero
-- [Clone Hero Bad Songs Cleaner](https://github.com/iamjrmh/CloneHeroBadSongsCleaner) - Clean up problematic songs from your library
+- [CHCleaner](https://github.com/iamjrmh/CHCleaner) - Clean up problematic songs from your library
 - [Chorus](https://chorus.fightthe.pw/) - Song database and downloader
 
 ---
