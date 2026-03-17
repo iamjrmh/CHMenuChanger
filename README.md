@@ -55,7 +55,7 @@ To avoid doing this every time, right-click the exe → **Properties** → **Com
 
 1. Go to the **Releases** page on this github repository and download **CHMenuChanger_Installer.exe** from the latest release.
 2. Double click **CHMenuChanger_Installer.exe** to open the installer.
-3. By default it will install to the root of your `C:` drive. Feel free ti change it.
+3. By default it will install to the root of your `C:` drive. Feel free to change it.
 4. Continue through the rest of the prompt until it finishes installing. Now you can open your start menu and launch "CHMenuChanger". 
 
 ## 🚀 Portable Quick Start
