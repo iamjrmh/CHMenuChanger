@@ -153,6 +153,26 @@ Python 3.9 or newer required.
 
 ---
 
+## 🔨 Building
+
+To compile a standalone `.exe` from source yourself:
+
+**Requirements**
+- Windows 10 or 11 (64-bit)
+- Python 3.11 (64-bit) — download from python.org, check "Add Python to PATH" during install
+
+**Steps**
+
+1. Clone or download this repository
+2. Place `build.bat`, `write_spec.py`, and `rthook_texture2d.py` in the same folder as `clone_hero_bg_changer.py`
+3. Double-click `build.bat`
+
+The script will automatically create a virtual environment, install all dependencies, and produce the finished build at `dist\CHMenuChanger\`. Zip that entire folder to distribute — do not ship the `.exe` alone.
+
+Build files are available in the repository alongside the source.
+
+---
+
 ## 📄 License
 
 MIT License - free to use, modify, and distribute.
