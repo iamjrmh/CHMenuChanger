@@ -382,7 +382,8 @@ class AssetManager:
         try:
             img = d.image
             if img is not None:
-                return img.convert("RGBA").transpose(Image.FLIP_TOP_BOTTOM), None
+                # .image handles Unity's bottom-up storage internally -- no flip needed
+                return img.convert("RGBA"), None
             errors.append("Approach 1 (.image): returned None")
         except Exception as e:
             errors.append("Approach 1 (.image): {}".format(e))
