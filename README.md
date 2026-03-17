@@ -22,6 +22,19 @@ Once set up this way, the launcher will no longer overwrite your files. A workar
 
 ---
 
+## 🔴 Run as Administrator
+
+**CHMenuChanger must be run as Administrator or it will fail to save changes.**
+
+Clone Hero's game files are stored in a protected location that requires elevated permissions to write to. Without admin rights the tool will open and scan normally, but Apply & Save will fail silently or with an error.
+
+**To run as admin:**
+- Right-click **CHMenuChanger.exe** → **Run as administrator**
+
+To avoid doing this every time, right-click the exe → **Properties** → **Compatibility** tab → check **Run this program as an administrator** → **OK**. It will always launch elevated from that point on.
+
+---
+
 ## ✨ Features
 
 - **Direct asset editing** - reads and writes Unity `.assets` files using UnityPy, no external tools needed
