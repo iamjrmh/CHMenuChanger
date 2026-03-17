@@ -65,7 +65,7 @@ While this process is usually non-destructive, using this tool may cause some ir
 
 ## 📁 Direct Install (Recommended, quicker)
 
-1. Go to the **Releases** page on this github repository and download **CHMenuChanger_Installer.exe** from the latest release.
+1. Go to the **[Releases](https://github.com/iamjrmh/CHMenuChanger/releases)** page on this github repository and download **CHMenuChanger_Installer.exe** from the latest release.
 2. Double click **CHMenuChanger_Installer.exe** to open the installer.
 3. By default it will install to the root of your `C:` drive. Feel free to change it.
 4. Continue through the rest of the prompt until it finishes installing. Now you can open your start menu and launch "CHMenuChanger".
@@ -78,7 +78,7 @@ While this process is usually non-destructive, using this tool may cause some ir
 
 ## 🚀 Portable Install
 
-1. Go to the **Releases** page on this GitHub repository and download **CHMenuChanger_Portable.zip** from the latest release.
+1. Go to the **[Releases](https://github.com/iamjrmh/CHMenuChanger/releases)** page on this GitHub repository and download **CHMenuChanger_Portable.zip** from the latest release.
 2. Extract the ZIP anywhere on your PC — your Desktop, a games folder, wherever you like.
 3. Double-click **CHMenuChanger.exe** to launch. No install, no Python, nothing else needed.
 4. Click **Browse** and select your `Clone Hero_Data` folder (usually at `Documents\Clone Hero\Clone Hero_Data`).
