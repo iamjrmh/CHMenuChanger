@@ -65,21 +65,63 @@ To avoid doing this every time, right-click the exe → **Properties** → **Com
 
 ## 📸 Examples
 
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu1.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu2.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu3.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu4.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu5.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/1.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/2.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/3.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/4.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/5.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/6.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/7.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/8.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/9.png)
-![](https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/10.png)
+<p align="center">
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu1.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu1.png" width="250">
+  </a>
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu2.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu2.png" width="250">
+  </a>
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu3.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu3.png" width="250">
+  </a>
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu4.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu4.png" width="250">
+  </a>
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu5.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu5.png" width="250">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/1.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/1.png" width="250">
+  </a>
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/2.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/2.png" width="250">
+  </a>
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/3.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/3.png" width="250">
+  </a>
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/4.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/4.png" width="250">
+  </a>
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/5.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/5.png" width="250">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/6.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/6.png" width="250">
+  </a>
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/7.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/7.png" width="250">
+  </a>
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/8.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/8.png" width="250">
+  </a>
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/9.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/9.png" width="250">
+  </a>
+  <a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/10.png">
+    <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/10.png" width="250">
+  </a>
+</p>
+
+<a href="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu1.png">
+  <img src="https://raw.githubusercontent.com/iamjrmh/CHMenuChanger/main/Screenshots/Menu1.png" width="250">
+</a>
 
 ---
 
