@@ -59,7 +59,7 @@ Prerequisites:
 - Keep backups. This tool does keep backups but it's always a good idea to keep an extra backup.
 
 Disclaimer:
-While this process is usually non-destructive, using this tool may cause some irreversible damage. I do not take any responsibilty for any damages this may cause.
+While this process is usually non-destructive, using this tool may cause some irreversible damage. By using this tool, you assume all responsibilities are your own, including fixing any mistakes this tool may cause. You have been warned.
 
 ---
 
