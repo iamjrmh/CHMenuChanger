@@ -7,7 +7,7 @@ Swap out Clone Hero's menu background textures without touching a single config 
 
 ---
 
-## ✅ Clone Hero Launcher — Handled Automatically
+## ✅ Clone Hero Launcher - Handled Automatically
 
 The Clone Hero launcher used to reset your game files back to default after every launch, undoing any background changes made with this tool.
 
@@ -64,8 +64,8 @@ While this process is usually non-destructive, using this tool may cause some ir
 3. By default it will install to the root of your `C:` drive. Feel free to change it.
 4. Continue through the rest of the prompt until it finishes installing. Now you can open your start menu and launch "CHMenuChanger".
 5. Click Browse and select your Clone Hero installation folder (usually `Documents\Clone Hero`. If not, find the folder that contains `Clone Hero.exe`).
-6. Click **Confirm** — CHMenuChanger will derive the `Clone Hero_Data` path automatically and patch your install in the background.
-7. Click **Load & Scan** — the tool scans all asset files and creates backups automatically.
+6. Click **Confirm** - CHMenuChanger will derive the `Clone Hero_Data` path automatically and patch your install in the background.
+7. Click **Load & Scan** - the tool scans all asset files and creates backups automatically.
 8. Select a background from the left panel.
 9. Click **Choose Replacement** and pick your image.
 10. Click **Apply & Save** to write the changes directly to your game files.
@@ -74,11 +74,11 @@ While this process is usually non-destructive, using this tool may cause some ir
 ## 🚀 Portable Install
 
 1. Go to the **[Releases](https://github.com/iamjrmh/CHMenuChanger/releases)** page on this GitHub repository and download **CHMenuChanger_Portable.zip** from the [latest release](https://github.com/iamjrmh/CHMenuChanger/releases/latest/download/CHMenuChanger_Portable.zip).
-2. Extract the ZIP anywhere on your PC — your Desktop, a games folder, wherever you like.
+2. Extract the ZIP anywhere on your PC - your Desktop, a games folder, wherever you like.
 3. Double-click **CHMenuChanger.exe** to launch. No install, no Python, nothing else needed.
 4. Click Browse and select your Clone Hero installation folder (usually `Documents\Clone Hero`. If not, find the folder that contains `Clone Hero.exe`).
-5. Click **Confirm** — CHMenuChanger will derive the `Clone Hero_Data` path automatically and patch your install in the background.
-6. Click **Load & Scan** — the tool scans all asset files and creates backups automatically.
+5. Click **Confirm** - CHMenuChanger will derive the `Clone Hero_Data` path automatically and patch your install in the background.
+6. Click **Load & Scan** - the tool scans all asset files and creates backups automatically.
 7. Select a background from the left panel.
 8. Click **Choose Replacement** and pick your image.
 9. Click **Apply & Save** to write the changes directly to your game files.
@@ -138,7 +138,7 @@ Profiles and the last-used folder path are saved automatically to `ch_bg_config.
 
 ## 🔒 Backup System
 
-On the first **Load & Scan** of any folder, the tool automatically copies the original asset files into a `_CH_BG_Backups` subfolder inside `Clone Hero_Data`. This happens once — subsequent scans skip files that are already backed up.
+On the first **Load & Scan** of any folder, the tool automatically copies the original asset files into a `_CH_BG_Backups` subfolder inside `Clone Hero_Data`. This happens once - subsequent scans skip files that are already backed up.
 
 - The **Restore Backups** button (in the folder bar) copies all backed-up files back over the live game files and triggers a fresh scan.
 - The backup status indicator in the folder bar shows whether backups are present for the current folder.
@@ -152,7 +152,7 @@ On the first **Load & Scan** of any folder, the tool automatically copies the or
 Make sure you selected the `Clone Hero_Data` folder, not the game's root folder or a subfolder inside it.
 
 **Changes are reverted after launching the game**
-The launcher patch may not have applied correctly. Check the welcome screen badge — if it showed `✗ Not Patched`, your install folder may not be registered in `game_installs.json` yet. Open the Launcher, add the install manually, then re-run CHMenuChanger and confirm the folder again. Also make sure the install is set as your default in Launcher → Settings.
+The launcher patch may not have applied correctly. Check the welcome screen badge - if it showed `✗ Not Patched`, your install folder may not be registered in `game_installs.json` yet. Open the Launcher, add the install manually, then re-run CHMenuChanger and confirm the folder again. Also make sure the install is set as your default in Launcher → Settings.
 
 **Export Original shows a very small or wrong image**
 Some textures share similar names across multiple asset files. The tool pins `Logo_Transparent` strictly to `globalgamemanagers.assets` to avoid this, but if you see it on another background, open an issue.
@@ -180,7 +180,7 @@ To compile a standalone `.exe` from source yourself:
 
 **Requirements**
 - Windows 10 or 11 (64-bit)
-- Python 3.11 (64-bit) — download from python.org, check "Add Python to PATH" during install
+- Python 3.11 (64-bit) - download from python.org, check "Add Python to PATH" during install
 
 **Steps**
 
@@ -188,7 +188,7 @@ To compile a standalone `.exe` from source yourself:
 2. Place `build.bat`, `write_spec.py`, and `rthook_texture2d.py` in the same folder as `clone_hero_bg_changer.py`
 3. Double-click `build.bat`
 
-The script will automatically create a virtual environment, install all dependencies, and produce the finished build at `dist\CHMenuChanger\`. Zip that entire folder to distribute — do not ship the `.exe` alone.
+The script will automatically create a virtual environment, install all dependencies, and produce the finished build at `dist\CHMenuChanger\`. Zip that entire folder to distribute - do not ship the `.exe` alone.
 
 Build files are available in the repository alongside the source.
 
