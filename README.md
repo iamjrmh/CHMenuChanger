@@ -7,20 +7,13 @@ Swap out Clone Hero's menu background textures without touching a single config 
 
 ---
 
-## ⚠️ Important - Clone Hero Launcher
+## ✅ Clone Hero Launcher — Handled Automatically
 
-The Clone Hero launcher **resets your game files back to default after every launch**, which will undo any background changes made with this tool.
+The Clone Hero launcher used to reset your game files back to default after every launch, undoing any background changes made with this tool.
 
-To prevent that, you need to set up your install manually:
+**This is now handled automatically.** On first launch, CHMenuChanger patches your install as Manual in the background so the launcher leaves your files alone. A `✓ Patched` / `✗ Not Patched` badge in the welcome screen confirms the result before it closes.
 
-1. Install Clone Hero through the launcher as normal.
-2. Move that install folder to a different location on your PC.
-3. In the launcher settings, remove the old install path.
-4. Add your new manual path instead.
-
-Once set up this way, the launcher will no longer overwrite your files. A workaround that avoids this setup entirely is being worked on for a future update.
-
-**I am working on a simple video + written walkthrough tutorial for setting this up.**
+If your backgrounds still aren't saving after patching, open the Launcher → Settings and set this install as your default.
 
 ---
 
@@ -47,6 +40,7 @@ To avoid doing this every time, right-click the exe → **Properties** → **Com
 - **Profile system** - save multiple background sets and switch between them freely
 - **Default profile** - read-only profile that always reflects the original unmodified textures
 - **Size validation** - enforces minimum resolution requirements per background (1920x1080 standard, 2030x1328 for the logo)
+- **Launcher patching** - automatically patches your install as Manual on first launch so the CH Launcher stops resetting your files
 - **No install required** - distributed as a standalone `.exe`, just download and run
 
 ---
@@ -69,24 +63,26 @@ While this process is usually non-destructive, using this tool may cause some ir
 2. Double click **CHMenuChanger_Installer.exe** to open the installer.
 3. By default it will install to the root of your `C:` drive. Feel free to change it.
 4. Continue through the rest of the prompt until it finishes installing. Now you can open your start menu and launch "CHMenuChanger".
-5. Click Browse and select your Clone Hero_Data folder (usually at Documents\Clone Hero\Clone Hero_Data. If not, go to your Clone Hero installation folder that contains the .exe. That folder has your data folder).
-6. Click Load & Scan — the tool scans all asset files and creates backups automatically.
-7. Select a background from the left panel.
-8. Click Choose Replacement and pick your image.
-9. Click Apply & Save to write the changes directly to your game files.
-10. Open Clone Hero to see the result.
+5. Click Browse and select your Clone Hero installation folder (usually `Documents\Clone Hero`. If not, find the folder that contains `Clone Hero.exe`).
+6. Click **Confirm** — CHMenuChanger will derive the `Clone Hero_Data` path automatically and patch your install in the background.
+7. Click **Load & Scan** — the tool scans all asset files and creates backups automatically.
+8. Select a background from the left panel.
+9. Click **Choose Replacement** and pick your image.
+10. Click **Apply & Save** to write the changes directly to your game files.
+11. Open Clone Hero to see the result.
 
 ## 🚀 Portable Install
 
 1. Go to the **[Releases](https://github.com/iamjrmh/CHMenuChanger/releases)** page on this GitHub repository and download **CHMenuChanger_Portable.zip** from the [latest release](https://github.com/iamjrmh/CHMenuChanger/releases/latest/download/CHMenuChanger_Portable.zip).
 2. Extract the ZIP anywhere on your PC — your Desktop, a games folder, wherever you like.
 3. Double-click **CHMenuChanger.exe** to launch. No install, no Python, nothing else needed.
-4. Click Browse and select your `Clone Hero_Data` folder (usually at `Documents\Clone Hero\Clone Hero_Data`. If not, go to your Clone Hero installation folder that contains the .exe. That folder has your data folder).
-5. Click **Load & Scan** — the tool scans all asset files and creates backups automatically.
-6. Select a background from the left panel.
-7. Click **Choose Replacement** and pick your image.
-8. Click **Apply & Save** to write the changes directly to your game files.
-9. Open Clone Hero to see the result.
+4. Click Browse and select your Clone Hero installation folder (usually `Documents\Clone Hero`. If not, find the folder that contains `Clone Hero.exe`).
+5. Click **Confirm** — CHMenuChanger will derive the `Clone Hero_Data` path automatically and patch your install in the background.
+6. Click **Load & Scan** — the tool scans all asset files and creates backups automatically.
+7. Select a background from the left panel.
+8. Click **Choose Replacement** and pick your image.
+9. Click **Apply & Save** to write the changes directly to your game files.
+10. Open Clone Hero to see the result.
 
 ---
 
@@ -156,7 +152,7 @@ On the first **Load & Scan** of any folder, the tool automatically copies the or
 Make sure you selected the `Clone Hero_Data` folder, not the game's root folder or a subfolder inside it.
 
 **Changes are reverted after launching the game**
-The Clone Hero launcher is resetting your files. See the important note at the top of this README.
+The launcher patch may not have applied correctly. Check the welcome screen badge — if it showed `✗ Not Patched`, your install folder may not be registered in `game_installs.json` yet. Open the Launcher, add the install manually, then re-run CHMenuChanger and confirm the folder again. Also make sure the install is set as your default in Launcher → Settings.
 
 **Export Original shows a very small or wrong image**
 Some textures share similar names across multiple asset files. The tool pins `Logo_Transparent` strictly to `globalgamemanagers.assets` to avoid this, but if you see it on another background, open an issue.
@@ -170,10 +166,9 @@ Your replacement image must meet the minimum resolution for that background. Ups
 
 If you want to run the `.py` directly instead of using the exe:
 
-```
-pip install Pillow UnityPy
-python clone_hero_bg_changer.py
-```
+`pip install Pillow UnityPy`
+
+`python clone_hero_bg_changer.py`
 
 Python 3.9 or newer required.
 
