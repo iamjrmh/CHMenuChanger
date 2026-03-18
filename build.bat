@@ -175,6 +175,47 @@ echo.
 echo   Test now: run dist\CHMenuChanger\CHMenuChanger.exe from this window.
 echo   If it crashes silently, the error will print here.
 echo.
+:: NSIS installer build (optional)
+echo.
+echo  [Optional] Looking for NSIS to build installer...
+
+set "MAKENSIS="
+if exist "C:\Program Files (x86)\NSIS\makensis.exe" set "MAKENSIS=C:\Program Files (x86)\NSIS\makensis.exe"
+if exist "C:\Program Files\NSIS\makensis.exe" set "MAKENSIS=C:\Program Files\NSIS\makensis.exe"
+
+if not defined MAKENSIS (
+    echo  NSIS not found -- skipping installer.
+    echo  Install from https://nsis.sourceforge.io/Download then rerun to get CHMenuChanger_Setup.exe
+    goto :done_nsis
+)
+
+if not exist "CHMenuChanger_Installer.nsi" (
+    echo  CHMenuChanger_Installer.nsi not found -- skipping installer.
+    goto :done_nsis
+)
+
+echo  Compiling NSIS installer...
+"%MAKENSIS%" CHMenuChanger_Installer.nsi
+if !errorlevel! neq 0 (
+    echo  [WARNING] NSIS compile failed. .exe build is still good.
+    goto :done_nsis
+)
+echo  Installer built: CHMenuChanger_Setup.exe
+
+:done_nsis
+echo.
+echo  =============================================================
+echo   BUILD SUCCESSFUL
+echo  =============================================================
+echo.
+echo   Executable : dist\CHMenuChanger\CHMenuChanger.exe
+echo   Installer  : CHMenuChanger_Setup.exe  (if NSIS was installed)
+echo.
+echo   Without installer: ZIP the entire dist\CHMenuChanger\ folder.
+echo   With installer:    ship CHMenuChanger_Setup.exe standalone.
+echo.
+echo   Test: run dist\CHMenuChanger\CHMenuChanger.exe from this window.
+echo.
 goto :eof
 
 :fail

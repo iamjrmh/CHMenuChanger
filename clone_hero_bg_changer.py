@@ -151,6 +151,130 @@ CONFIG_FILE   = _app_dir() / "ch_bg_config.json"
 PROFILES_FILE = _app_dir() / "ch_bg_profiles.json"
 SCAN_LOG_FILE = _app_dir() / "ch_bg_scan.log"
 
+# CH Launcher install registry – used for silent patching
+_INSTALLS_FILE = Path(os.environ.get("APPDATA", "")) / \
+    "net.clonehero" / "ch_launcher" / "game_installs.json"
+
+
+def _silent_patch_as_manual(install_folder: str) -> str:
+    """
+    Silently mark the matching Clone Hero install as isFromLauncher=false
+    so the Launcher treats it as a manually-managed install.
+
+    Returns a short status string (logged but never shown in a dialog).
+    No exceptions are raised – any failure is caught and returned as a message.
+    """
+    installs_path = _INSTALLS_FILE
+    if not installs_path.is_file():
+        return "game_installs.json not found – skipping launcher patch"
+
+    backup_path = Path(str(installs_path) + ".bak")
+    try:
+        shutil.copy2(str(installs_path), str(backup_path))
+    except Exception as e:
+        return f"Could not create backup of game_installs.json: {e}"
+
+    try:
+        data = json.loads(installs_path.read_text(encoding="utf-8"))
+    except Exception as e:
+        return f"Could not read game_installs.json: {e}"
+
+    # Normalise both paths for comparison (forward-slash, lower-case)
+    def _norm_path(p):
+        return str(p).replace("\\", "/").rstrip("/").lower()
+
+    target = _norm_path(install_folder)
+    patched = 0
+    for install in data.get("installs", []):
+        if _norm_path(install.get("directoryPath", "")) == target:
+            install["isFromLauncher"]  = False
+            install["manifestVersion"] = None
+            install["manifestDate"]    = None
+            patched += 1
+
+    if patched == 0:
+        return (
+            f"No matching install found in game_installs.json for:\n  {install_folder}\n"
+            "You may need to add it to the Launcher manually and re-confirm."
+        )
+
+    try:
+        installs_path.write_text(
+            json.dumps(data, indent=2), encoding="utf-8")
+    except Exception as e:
+        return f"Could not save patched game_installs.json: {e}"
+
+    return f"Launcher patch applied ({patched} install(s) set to Manual)"
+
+
+# Process names the CH Launcher is known to run under
+_LAUNCHER_PROCS = ("CloneHeroLauncher.exe", "ch_launcher.exe", "clone-hero-launcher.exe")
+
+def _kill_launcher() -> bool:
+    """
+    Force-kill the Clone Hero Launcher if it is running.
+    Returns True if at least one process was terminated, False otherwise.
+    Silently swallows all errors.
+    """
+    killed = False
+    if sys.platform == "win32":
+        for proc in _LAUNCHER_PROCS:
+            try:
+                flags = 0x08000000  # CREATE_NO_WINDOW
+                result = _subprocess.run(
+                    ["taskkill", "/F", "/IM", proc],
+                    capture_output=True, creationflags=flags)
+                if result.returncode == 0:
+                    killed = True
+            except Exception:
+                pass
+    else:
+        for proc in _LAUNCHER_PROCS:
+            try:
+                result = _subprocess.run(
+                    ["pkill", "-9", "-f", proc], capture_output=True)
+                if result.returncode == 0:
+                    killed = True
+            except Exception:
+                pass
+    return killed
+
+
+def _launcher_is_running() -> bool:
+    """Return True if any known launcher process is currently running."""
+    if sys.platform == "win32":
+        try:
+            flags = 0x08000000
+            out = _subprocess.run(
+                ["tasklist", "/FI", "IMAGENAME eq CloneHeroLauncher.exe",
+                 "/NH", "/FO", "CSV"],
+                capture_output=True, text=True, creationflags=flags).stdout
+            if "CloneHeroLauncher.exe" in out:
+                return True
+            # Also check the alternate name
+            out2 = _subprocess.run(
+                ["tasklist", "/FI", "IMAGENAME eq ch_launcher.exe",
+                 "/NH", "/FO", "CSV"],
+                capture_output=True, text=True, creationflags=flags).stdout
+            return "ch_launcher.exe" in out2
+        except Exception:
+            return False
+    else:
+        for proc in _LAUNCHER_PROCS:
+            try:
+                r = _subprocess.run(["pgrep", "-f", proc], capture_output=True)
+                if r.returncode == 0:
+                    return True
+            except Exception:
+                pass
+        return False
+
+
+def _get_default_data():
+    """Return the best known data path: saved config value, or the hardcoded fallback."""
+    cfg = _load_json(CONFIG_FILE, {})
+    return cfg.get("default_data_path", DEFAULT_DATA)
+
 def _log(msg: str):
     """Append a timestamped line to the scan log and print it."""
     import datetime
@@ -214,10 +338,10 @@ def _norm(s: str) -> str:
 C = dict(
     bg="#0c0e13", panel="#13161f", card="#181c28", card2="#1c2030",
     border="#252b3d", border2="#2e3650",
-    accent="#6c3bff", accent_dim="#3d2299", accent2="#ff3b8a",
+    accent="#6c3bff", accent_dim="#3d2299", accent2="#ff3b8a", accent3="#00d4aa",
     text="#e9ecf8", text_dim="#636b82", text_mid="#9aa3bf",
     success="#22c55e", warn="#f59e0b", error="#ef4444",
-    selected="#341a7a", hover="#262d42",
+    selected="#341a7a", hover="#1e2235",
 )
 
 FT  = ("Segoe UI", 10)
@@ -303,7 +427,6 @@ class AssetManager:
             env = UnityPy.load(key)
             self._envs[key] = env
             count = 0
-            _logged_attrs = False  # log Texture2D attrs once per file
             for obj in env.objects:
                 if obj.type.name == "Texture2D":
                     try:
@@ -313,19 +436,6 @@ class AssetManager:
                             self._data[n]    = d
                             self._env_map[n] = (env, key)
                             count += 1
-                            # Log attrs of first texture so we know the real names
-                            if not _logged_attrs:
-                                _logged_attrs = True
-                                attrs = [a for a in dir(d) if not a.startswith("__")]
-                                _log("  [attrs] first Texture2D in {}: {}".format(
-                                    Path(fpath).name, attrs))
-                                # Log stream data info if present
-                                for sd_attr in ("m_StreamData", "streamData",
-                                                "stream_data", "m_imageData"):
-                                    val = getattr(d, sd_attr, None)
-                                    if val is not None:
-                                        _log("  [stream] {}.{} = {}".format(
-                                            n, sd_attr, repr(val)[:200]))
                     except Exception as ex:
                         _log("[_load_file] read error in {}: {}".format(
                             Path(fpath).name, ex))
@@ -492,38 +602,23 @@ class AssetManager:
     def import_image(self, asset_name, pil):
         d = self._data.get(asset_name)
         if d is None:
-            _log("[import_image] not in cache: {}".format(asset_name))
             return False
-
         rgba = pil.convert("RGBA")
-        # NOTE: do NOT flip here -- set_image() handles Unity's bottom-up
-        # storage format internally. Flipping here would double-flip it.
-
-        import traceback
-
-        # Try set_image() first (UnityPy 1.20+ API, avoids the dynlib loader
-        # that pulls in FMOD and crashes in frozen exes)
         try:
             if hasattr(d, "set_image"):
-                d.set_image(rgba)
-                d.save()
+                d.set_image(rgba); d.save()
                 self._dirty.add(asset_name)
                 _log("[WRITE OK] set_image: {}".format(asset_name))
                 return True
         except Exception as e:
-            _log("[WRITE FAIL] set_image for \'{}\': {}".format(asset_name, e))
-            _log("[WRITE FAIL] traceback:\n" + traceback.format_exc())
-
-        # Fallback: property setter (works in script mode)
+            _log("[WRITE FAIL] set_image '{}': {}".format(asset_name, e))
         try:
-            d.image = rgba
-            d.save()
+            d.image = rgba; d.save()
             self._dirty.add(asset_name)
             _log("[WRITE OK] image= setter: {}".format(asset_name))
             return True
         except Exception as e:
-            _log("[WRITE FAIL] image= setter for \'{}\': {}".format(asset_name, e))
-            _log("[WRITE FAIL] traceback:\n" + traceback.format_exc())
+            _log("[WRITE FAIL] image= setter '{}': {}".format(asset_name, e))
             return False
 
     # -- Backup helpers --------------------------------------------------------
@@ -579,15 +674,11 @@ class AssetManager:
         for fpath, env in dirty_files.items():
             fname = Path(fpath).name
             try:
-                # env.file is the SerializedFile for this specific .assets file.
-                # Calling .save() returns the bytes for that file only.
                 data = env.file.save()
                 with open(fpath, "wb") as f:
                     f.write(data)
-                print("[save] {} ok - {} bytes".format(fname, len(data)))
                 saved.append(fpath)
             except Exception as e:
-                print("[save] {} FAILED: {}".format(fname, e))
                 errors.append("{}: {}".format(fname, e))
 
         if saved:
@@ -612,14 +703,14 @@ class AssetManager:
                         except Exception:
                             pass
             except Exception as e:
-                print("[reload]", Path(fpath).name, e)
+                _log("[reload] {}: {}".format(Path(fpath).name, e))
         self._dirty.clear()
 
 
 # -- Profile helpers -----------------------------------------------------------
 
 def _blank_profile(name):
-    return {"name": name, "data_path": DEFAULT_DATA, "replacements": {}}
+    return {"name": name, "data_path": _get_default_data(), "replacements": {}}
 
 def _load_profiles():
     d = _load_json(PROFILES_FILE, {})
@@ -629,86 +720,296 @@ def _save_profiles(p):
     _save_json(PROFILES_FILE, p)
 
 
+# -- Tooltip helper ------------------------------------------------------------
+
+class HoverTooltip:
+    """
+    Attach a rich tooltip popup to any widget.
+    Appears after a short delay on mouse-enter; disappears on leave.
+
+    Usage:
+        HoverTooltip(widget, "Some message text")
+    """
+    _PAD   = 14
+    _DELAY = 400   # ms before showing
+
+    def __init__(self, widget: tk.Widget, text: str,
+                 title: str = "", width: int = 400):
+        self._widget = widget
+        self._text   = text
+        self._title  = title
+        self._width  = width
+        self._win    = None
+        self._job    = None
+        widget.bind("<Enter>",    self._on_enter,  add="+")
+        widget.bind("<Leave>",    self._on_leave,  add="+")
+        widget.bind("<Button-1>", self._on_leave,  add="+")
+        widget.bind("<Destroy>",  self._on_destroy, add="+")
+
+    def _on_enter(self, _=None):
+        self._cancel()
+        self._job = self._widget.after(self._DELAY, self._show)
+
+    def _on_leave(self, _=None):
+        self._cancel()
+        self._hide()
+
+    def _on_destroy(self, _=None):
+        self._cancel()
+        self._hide()
+
+    def _cancel(self):
+        if self._job:
+            try: self._widget.after_cancel(self._job)
+            except Exception: pass
+            self._job = None
+
+    def _show(self):
+        if self._win:
+            return
+        try:
+            x = self._widget.winfo_rootx() + 24
+            y = self._widget.winfo_rooty() + self._widget.winfo_height() + 6
+        except Exception:
+            return
+
+        self._win = tk.Toplevel(self._widget)
+        self._win.wm_overrideredirect(True)
+        self._win.configure(bg=C["border"])
+        self._win.attributes("-topmost", True)
+
+        inner = tk.Frame(self._win, bg=C["card"], padx=self._PAD, pady=self._PAD)
+        inner.pack(padx=1, pady=1)
+
+        if self._title:
+            tk.Label(inner, text=self._title,
+                     font=("Segoe UI", 10, "bold"),
+                     fg=C["warn"], bg=C["card"],
+                     justify="left").pack(anchor="w", pady=(0, 6))
+
+        tk.Label(inner, text=self._text,
+                 font=("Segoe UI", 9),
+                 fg=C["text_mid"], bg=C["card"],
+                 justify="left", wraplength=self._width).pack(anchor="w")
+
+        self._win.update_idletasks()
+        sw = self._win.winfo_screenwidth()
+        tw = self._win.winfo_reqwidth()
+        if x + tw > sw - 10:
+            x = sw - tw - 10
+        self._win.geometry("+{}+{}".format(x, y))
+        self._win.bind("<Leave>", self._on_leave)
+
+    def _hide(self):
+        if self._win:
+            try: self._win.destroy()
+            except Exception: pass
+            self._win = None
+
+
 # -- Setup dialog (first launch) -----------------------------------------------
 
-
-# -- Welcome / info dialog ------------------------------------------------------
-
-class WelcomeDialog:
+class SetupDialog:
     """
-    Shown on first launch. Explains the Clone Hero launcher issue and
-    JURMR branding. Never shown again once dismissed.
+    First-launch dialog. Asks the user to locate their Clone Hero install
+    folder, then derives the _Data path automatically and saves it to config.
+
+    After the dialog closes, call .result to get the chosen data path (str),
+    or None if the user skipped.
     """
 
     def __init__(self, root: tk.Tk):
+        self.result = None
+
         self.win = tk.Toplevel(root)
         self.win.title("Welcome to CHMenuChanger")
         self.win.configure(bg=C["bg"])
         self.win.resizable(False, False)
         self.win.grab_set()
-        self.win.protocol("WM_DELETE_WINDOW", self.win.destroy)
+        self.win.protocol("WM_DELETE_WINDOW", self._skip)
 
-        # Header
-        hdr = tk.Frame(self.win, bg=C["panel"])
-        hdr.pack(fill="x")
-        hi  = tk.Frame(hdr, bg=C["panel"], padx=28, pady=18)
-        hi.pack(fill="x")
-
+        # ── Header ────────────────────────────────────────────────────────────
+        hdr = tk.Frame(self.win, bg=C["panel"]); hdr.pack(fill="x")
+        hi  = tk.Frame(hdr, bg=C["panel"], padx=28, pady=18); hi.pack(fill="x")
         tk.Label(hi, text="CHMenuChanger", font=("Segoe UI", 22, "bold"),
                  bg=C["panel"], fg=C["text"]).pack(side="left")
         tk.Label(hi, text="  by JURMR", font=("Segoe UI", 13),
                  bg=C["panel"], fg=C["accent"]).pack(side="left", pady=(8, 0))
 
-        # Body
-        body = tk.Frame(self.win, bg=C["bg"], padx=28, pady=20)
+        # Patch status badge – top-right of header, updated after Confirm
+        self._patch_badge = tk.Label(
+            hi, text="", font=("Segoe UI", 9, "bold"),
+            bg=C["panel"], fg=C["text_dim"], padx=10, pady=4,
+            relief="flat")
+        self._patch_badge.pack(side="right", padx=(0, 4))
+        self._update_patch_badge(None)  # show initial "not patched" state
+
+        # ── Body ──────────────────────────────────────────────────────────────
+        body = tk.Frame(self.win, bg=C["bg"], padx=28, pady=22)
         body.pack(fill="both")
 
-        # Info card - launcher warning
-        card = tk.Frame(body, bg=C["card"],
-                        highlightbackground=C["border"], highlightthickness=1)
-        card.pack(fill="x", pady=(0, 14))
-        ci   = tk.Frame(card, bg=C["card"], padx=18, pady=16)
-        ci.pack(fill="x")
+        tk.Label(body,
+                 text="Select your Clone Hero installation folder to get started.",
+                 font=("Segoe UI", 11), fg=C["text"], bg=C["bg"],
+                 justify="left").pack(anchor="w", pady=(0, 18))
 
-        tk.Label(ci, text="! Important - Clone Hero Launcher",
-                 font=FTB, bg=C["card"], fg=C["warn"]).pack(anchor="w")
+        # Path picker card
+        pick_card = tk.Frame(body, bg=C["card"],
+                             highlightbackground=C["border"], highlightthickness=1,
+                             padx=18, pady=16)
+        pick_card.pack(fill="x", pady=(0, 10))
 
-        msg = (
-            "The Clone Hero launcher resets your game files back to default after "
-            "every single launch, which will undo any background changes made with "
-            "this tool.\n\n"
-            "To prevent this, you need to set up your install manually:\n\n"
-            "  1.  Install Clone Hero through the launcher as normal.\n"
-            "  2.  Move that install folder to a different location on your PC.\n"
-            "  3.  In the launcher settings, remove the old install path.\n"
-            "  4.  Add your new manual path instead.\n\n"
-            "Once set up this way, the launcher will no longer overwrite your files.\n\n"
-            "Note: A workaround that avoids this setup entirely is being worked on "
-            "for a future update."
-        )
-        tk.Label(ci, text=msg, font=FT, bg=C["card"], fg=C["text_mid"],
-                 justify="left", wraplength=520).pack(anchor="w", pady=(8, 0))
+        tk.Label(pick_card, text="CLONE HERO INSTALL FOLDER",
+                 font=("Segoe UI", 8, "bold"), fg=C["text_dim"],
+                 bg=C["card"]).pack(anchor="w", pady=(0, 8))
 
-        # Footer
+        row = tk.Frame(pick_card, bg=C["card"]); row.pack(fill="x")
+        self._path_var = tk.StringVar()
+        ttk.Entry(row, textvariable=self._path_var,
+                  font=FTM, style="DE.TEntry").pack(side="left", fill="x", expand=True)
+        tk.Button(row, text="Browse…", command=self._browse,
+                  bg=C["accent_dim"], fg=C["text"], relief="flat",
+                  font=FT, padx=10, pady=4, cursor="hand2").pack(side="left", padx=(8, 0))
+
+        self._derived_lbl = tk.Label(pick_card, text="",
+                                      font=FTM, fg=C["text_dim"],
+                                      bg=C["card"], anchor="w")
+        self._derived_lbl.pack(fill="x", pady=(10, 0))
+        self._path_var.trace_add("write", self._on_path_change)
+
+        # Pre-fill with the default Documents location if it exists
+        default = str(Path.home() / "Documents" / "Clone Hero")
+        if os.path.isdir(default):
+            self._path_var.set(default)
+
+        # Info blurb
+        info_card = tk.Frame(body, bg=C["card2"],
+                             highlightbackground=C["border"], highlightthickness=1,
+                             padx=18, pady=14)
+        info_card.pack(fill="x", pady=(4, 0))
+        tk.Label(info_card,
+                 text="This is the folder that contains \"Clone Hero.exe\".\n"
+                      "CHMenuChanger will look for game assets inside the\n"
+                      "\"Clone Hero_Data\" subfolder found within it.",
+                 font=FT, fg=C["text_mid"], bg=C["card2"],
+                 justify="left").pack(anchor="w")
+
+        # ── Footer ────────────────────────────────────────────────────────────
         foot = tk.Frame(self.win, bg=C["panel"], padx=24, pady=14)
         foot.pack(fill="x")
         tk.Label(foot, text="Made by JURMR", font=FTS,
                  bg=C["panel"], fg=C["text_dim"]).pack(side="left")
-        tk.Button(foot, text="Got it, let's go  ->",
-                  command=self.win.destroy,
-                  bg=C["accent"], fg="white", relief="flat",
-                  font=FTB, padx=18, pady=6,
-                  cursor="hand2").pack(side="right")
+        tk.Button(foot, text="Skip",
+                  command=self._skip,
+                  bg=C["border"], fg=C["text_dim"], relief="flat",
+                  font=FT, padx=14, pady=6, cursor="hand2").pack(side="right", padx=(8, 0))
+        self._confirm_btn = tk.Button(foot, text="Confirm  →",
+                                       command=self._confirm,
+                                       bg=C["accent"], fg="white", relief="flat",
+                                       font=FTB, padx=18, pady=6, cursor="hand2")
+        self._confirm_btn.pack(side="right")
 
-        # Center on root
+        # Centre on root
         self.win.update_idletasks()
-        rw = root.winfo_width()  or 800
-        rh = root.winfo_height() or 600
+        rw = root.winfo_width()  or 900
+        rh = root.winfo_height() or 700
         rx = root.winfo_rootx()
         ry = root.winfo_rooty()
         dw = self.win.winfo_reqwidth()
         dh = self.win.winfo_reqheight()
         self.win.geometry("+{}+{}".format(rx + (rw - dw)//2, ry + (rh - dh)//2))
+
+    def _update_patch_badge(self, success: bool | None):
+        """
+        Update the top-right patch status badge.
+          None  → not yet attempted  (neutral)
+          True  → patch succeeded    (green ✓)
+          False → patch failed       (red ✗)
+        """
+        if success is None:
+            self._patch_badge.config(
+                text="◦  Not Patched",
+                fg=C["text_dim"],
+                bg=C["panel"])
+        elif success:
+            self._patch_badge.config(
+                text="✓  Patched",
+                fg=C["success"],
+                bg=C["panel"])
+        else:
+            self._patch_badge.config(
+                text="✗  Not Patched",
+                fg=C["error"],
+                bg=C["panel"])
+
+    def _browse(self):
+        p = filedialog.askdirectory(
+            title="Select your Clone Hero install folder",
+            initialdir=self._path_var.get() or str(Path.home()))
+        if p:
+            self._path_var.set(p)
+
+    def _on_path_change(self, *_):
+        p = self._path_var.get().strip()
+        data_path = os.path.join(p, "Clone Hero_Data") if p else ""
+        if p and os.path.isdir(data_path):
+            self._derived_lbl.config(
+                text="  Data folder found:  {}".format(data_path),
+                fg=C["success"])
+            self._confirm_btn.config(state="normal", bg=C["accent"])
+        elif p:
+            self._derived_lbl.config(
+                text="  Derived path:  {}  (not found yet)".format(data_path),
+                fg=C["warn"])
+            self._confirm_btn.config(state="normal", bg=C["accent"])
+        else:
+            self._derived_lbl.config(text="", fg=C["text_dim"])
+
+    def _confirm(self):
+        p = self._path_var.get().strip()
+        if not p:
+            messagebox.showerror("No folder selected",
+                                 "Please choose your Clone Hero install folder.",
+                                 parent=self.win)
+            return
+        data_path = os.path.join(p, "Clone Hero_Data")
+        if not os.path.isdir(data_path):
+            if not messagebox.askyesno(
+                    "Folder not found",
+                    "\"Clone Hero_Data\" was not found inside:\n{}\n\n"
+                    "This might not be the right folder.  Continue anyway?".format(p),
+                    parent=self.win):
+                return
+
+        # ── Force-close the Launcher if it's running ──────────────────────────
+        if _launcher_is_running():
+            killed = _kill_launcher()
+            if killed:
+                _log("[launcher-patch] Launcher was running – force-closed before patching")
+                # Brief pause so the process fully exits before we write the JSON
+                self.win.after(600, lambda: self._do_patch(p, data_path))
+                return
+            else:
+                _log("[launcher-patch] Launcher detected but could not be killed – proceeding anyway")
+
+        self._do_patch(p, data_path)
+
+    def _do_patch(self, p: str, data_path: str):
+        """Run the actual patch and update the badge, then close the dialog."""
+        self.result = data_path
+
+        patch_msg = _silent_patch_as_manual(p)
+        _log("[launcher-patch] " + patch_msg)
+
+        success = patch_msg.startswith("Launcher patch applied")
+        self._update_patch_badge(success)
+
+        # Leave the badge visible for a moment so the user can see it
+        self.win.after(900, self.win.destroy)
+
+    def _skip(self):
+        self.result = None
+        self.win.destroy()
 
 
 class App(tk.Tk):
@@ -750,7 +1051,6 @@ class App(tk.Tk):
         # Ensure the locked Default profile always exists and stays clean
         if DEFAULT_PROFILE_NAME not in self._profiles:
             self._profiles[DEFAULT_PROFILE_NAME] = _blank_profile(DEFAULT_PROFILE_NAME)
-        # Always enforce: locked, no replacements
         self._profiles[DEFAULT_PROFILE_NAME]["locked"] = True
         self._profiles[DEFAULT_PROFILE_NAME]["replacements"] = {}
         _save_profiles(self._profiles)
@@ -761,12 +1061,18 @@ class App(tk.Tk):
         elif self._profiles:
             self._switch_profile(next(iter(self._profiles)))
 
-        # Show welcome dialog on first launch
-        if not self._cfg.get("welcome_shown", False):
-            self._cfg["welcome_shown"] = True
-            _save_json(CONFIG_FILE, self._cfg)
-            dlg = WelcomeDialog(self)
+        # Show setup dialog on first launch to capture the CH install directory
+        if not self._cfg.get("setup_done", False):
+            dlg = SetupDialog(self)
             self.wait_window(dlg.win)
+            if dlg.result:
+                self._data_v.set(dlg.result)
+                if not self._is_default_profile():
+                    self._active_prof["data_path"] = dlg.result
+                    _save_profiles(self._profiles)
+                self._cfg["default_data_path"] = dlg.result
+            self._cfg["setup_done"] = True
+            _save_json(CONFIG_FILE, self._cfg)
 
     # -- Styles ----------------------------------------------------------------
 
@@ -853,6 +1159,11 @@ class App(tk.Tk):
                                    font=FTS, bg=C["card2"], fg=C["warn"])
         self._lock_lbl.pack(side="left", padx=(10, 0))
 
+        # Reminder to set default install in the launcher (right-aligned so it never gets clipped)
+        tk.Label(inner,
+                 text="ℹ  If backgrounds aren't saving, open the Launcher → Settings and set this install as your default.",
+                 font=("Segoe UI", 8), bg=C["card2"], fg=C["text_dim"]).pack(side="right", padx=(14, 0))
+
         self._refresh_profile_combo()
 
     # -- GGM bar ---------------------------------------------------------------
@@ -866,7 +1177,7 @@ class App(tk.Tk):
 
         tk.Label(inner, text="Clone Hero_Data folder:", font=FTB,
                  bg=C["card"], fg=C["text_mid"]).pack(side="left")
-        self._data_v = tk.StringVar(value=DEFAULT_DATA)
+        self._data_v = tk.StringVar(value=_get_default_data())
         e = ttk.Entry(inner, textvariable=self._data_v,
                       width=56, font=FTM, style="DE.TEntry")
         e.pack(side="left", padx=8)
@@ -922,9 +1233,9 @@ class App(tk.Tk):
         prow = tk.Frame(right, bg=C["bg"])
         prow.pack(fill="both", expand=True)
 
-        self._orig_card = self._make_card(prow, "CURRENT  (in-game)", C["text_dim"])
+        self._orig_card = self._make_bg_card(prow, "CURRENT  (in-game)", C["text_dim"])
         self._orig_card.pack(side="left", fill="both", expand=True, padx=(0, 5))
-        self._new_card  = self._make_card(prow, "REPLACEMENT  (new)", C["accent2"])
+        self._new_card  = self._make_bg_card(prow, "REPLACEMENT  (new)", C["accent2"])
         self._new_card.pack(side="left", fill="both", expand=True, padx=(5, 0))
 
         # controls
@@ -951,7 +1262,7 @@ class App(tk.Tk):
                               self._act_apply_all, C["accent2"], "white", bold=True)
         self._apply_btn.pack(side="left", padx=3)
 
-    def _make_card(self, parent, label, label_fg):
+    def _make_bg_card(self, parent, label, label_fg):
         card = tk.Frame(parent, bg=C["card"],
                         highlightbackground=C["border"], highlightthickness=1)
         tk.Label(card, text=label, font=("Segoe UI", 9, "bold"),
@@ -960,10 +1271,12 @@ class App(tk.Tk):
         cv.pack(fill="both", expand=True, padx=6, pady=(0, 3))
         info = tk.Label(card, text="", font=FTS, bg=C["card"], fg=C["text_dim"])
         info.pack(pady=(0, 5))
-        card._cv   = cv
-        card._info = info
-        cv.bind("<Configure>", lambda e, c=cv, k=card: self._on_resize(c, k))
-        self._placeholder(cv, "-")
+        card._cv        = cv
+        card._info      = info
+        card._ph_text   = ""   # track current placeholder text for resize redraws
+        cv.bind("<Configure>", lambda e, c=cv, k=card: self._on_bg_resize(c, k))
+        # Don't draw placeholder at construction — canvas has no real size yet.
+        # It will be drawn correctly on the first <Configure> event once laid out.
         return card
 
     def _build_statusbar(self):
@@ -998,7 +1311,7 @@ class App(tk.Tk):
         self._cfg["last_profile"] = name
         _save_json(CONFIG_FILE, self._cfg)
         # sync ggm entry
-        self._data_v.set(self._active_prof.get("data_path", DEFAULT_DATA))
+        self._data_v.set(self._active_prof.get("data_path", _get_default_data()))
         # clear runtime state (new profile may have a different file)
         self._am = None
         self._asset_cache.clear()
@@ -1006,7 +1319,7 @@ class App(tk.Tk):
         self._new_pil.clear()
         self._orig_tk.clear()
         self._new_tk.clear()
-        self._refresh_tree()
+        self._bg_refresh_tree()
         self._status("Profile: " + name)
         # Reset backup indicator
         if hasattr(self, "_backup_lbl"):
@@ -1019,8 +1332,8 @@ class App(tk.Tk):
             self._btn_rename.config(state=s, fg=fg)
             self._btn_delete.config(state=s, fg=fg)
             self._lock_lbl.config(
-                text="🔒  Read-only  -  this is the original backup" if locked else "")
-        self._refresh_panels()
+                text="🔒  Read-only" if locked else "")
+        self._bg_refresh_panels()
 
     def _is_default_profile(self, name=None):
         """Return True if the named profile (or active profile) is the locked Default."""
@@ -1137,8 +1450,6 @@ class App(tk.Tk):
         def worker():
             try:
                 am = AssetManager(path)
-
-                # -- Auto-backup any files not yet backed up ----------------
                 needs = am.needs_backup()
                 if needs:
                     created, bk_errors = am.create_backups()
@@ -1148,12 +1459,7 @@ class App(tk.Tk):
                             "Some files could not be backed up:\n\n" +
                             "\n".join(bk_errors) +
                             "\n\nProceed with caution."))
-                    else:
-                        names = ", ".join(Path(p).name for p in created)
-                        print("[backup] created:", names)
-
                 self.after(0, lambda: self._on_ggm_ready(am))
-
             except Exception as ex:
                 msg = str(ex)
                 self.after(0, lambda: (
@@ -1184,13 +1490,13 @@ class App(tk.Tk):
                 Path(am.data_dir).name, len(all_names), found, len(BACKGROUNDS), bk_note
             )
         )
-        self._refresh_tree()
-        self._refresh_panels()
+        self._bg_refresh_tree()
+        self._bg_refresh_panels()
 
 
     # -- Tree refresh ----------------------------------------------------------
 
-    def _refresh_tree(self):
+    def _bg_refresh_tree(self):
         reps = self._active_prof.get("replacements", {})
         for iid, bg in self._tiid.items():
             has_rep = bool(reps.get(bg) and os.path.isfile(reps[bg]))
@@ -1216,20 +1522,21 @@ class App(tk.Tk):
         self._sel_lbl.config(text=f"Selected: {bg}")
         self._req_lbl.config(
             text=f"{'Exact' if exact else 'Min'}: {w}×{h}")
-        self._refresh_panels()
+        self._bg_refresh_panels()
 
     # -- Preview panels --------------------------------------------------------
 
-    def _refresh_panels(self):
+    def _bg_refresh_panels(self):
         bg = self._selected_bg()
 
         # -- orig --------------------------------------------------------------
         if bg in self._orig_pil:
-            self._put_image(self._orig_card, self._orig_pil[bg], "orig", bg)
+            self._orig_card._ph_text = ""
+            self._bg_put_image(self._orig_card, self._orig_pil[bg], "orig", bg)
         elif self._am is not None:
             an = self._asset_cache.get(bg)
             if an:
-                self._placeholder(self._orig_card._cv, "Loading…")
+                self._bg_placeholder(self._orig_card._cv, "Loading\u2026")
                 self._orig_card._info.config(text="")
                 am = self._am
                 def _load(am=am, bg=bg, an=an):
@@ -1237,54 +1544,55 @@ class App(tk.Tk):
                     self.after(0, lambda: self._on_orig_ready(bg, an, img, err))
                 threading.Thread(target=_load, daemon=True).start()
             else:
-                self._placeholder(self._orig_card._cv,
-                                  "No Texture2D matched for '{}'".format(bg))
+                self._bg_placeholder(self._orig_card._cv,
+                                     "No Texture2D matched for '{}'".format(bg))
                 self._orig_card._info.config(text="")
         else:
-            self._placeholder(self._orig_card._cv,
-                              "Select and scan a Clone Hero_Data folder first.")
+            self._bg_placeholder(self._orig_card._cv,
+                                 "Select and scan a Clone Hero_Data folder first.")
             self._orig_card._info.config(text="")
 
         # -- new ---------------------------------------------------------------
         reps     = self._active_prof.get("replacements", {})
         rep_path = reps.get(bg, "")
         if bg in self._new_pil:
-            self._put_image(self._new_card, self._new_pil[bg], "new", bg)
+            self._new_card._ph_text = ""
+            self._bg_put_image(self._new_card, self._new_pil[bg], "new", bg)
         elif rep_path and os.path.isfile(rep_path):
             try:
                 img = Image.open(rep_path).convert("RGBA")
                 self._new_pil[bg] = img
-                self._put_image(self._new_card, img, "new", bg)
+                self._new_card._ph_text = ""
+                self._bg_put_image(self._new_card, img, "new", bg)
                 w, h = img.size
                 self._new_card._info.config(
-                    text=f"{w}×{h}  |  {Path(rep_path).name}",
+                    text=f"{w}\u00d7{h}  |  {Path(rep_path).name}",
                     fg=C["success"])
             except Exception:
-                self._placeholder(self._new_card._cv,
-                                  "Could not load replacement image")
+                self._bg_placeholder(self._new_card._cv,
+                                     "Could not load replacement image")
                 self._new_card._info.config(text="")
         else:
-            self._placeholder(self._new_card._cv, "No replacement selected")
+            self._bg_placeholder(self._new_card._cv, "No replacement selected")
             self._new_card._info.config(text="")
 
     def _on_orig_ready(self, bg, asset_name, img, err=None):
         if img:
             self._orig_pil[bg] = img
             if self._selected_bg() == bg:
-                self._put_image(self._orig_card, img, "orig", bg)
+                self._bg_put_image(self._orig_card, img, "orig", bg)
                 w, h = img.size
                 self._orig_card._info.config(
                     text=f"{w}×{h}  |  {asset_name}", fg=C["text_mid"])
         else:
             if self._selected_bg() == bg:
-                # Show the real decode error so it\'s visible in the UI
                 short_err = (err or "unknown error")[:300]
-                self._placeholder(self._orig_card._cv,
-                                  f"Could not decode \'{asset_name}\'\n{short_err}")
+                self._bg_placeholder(self._orig_card._cv,
+                                     f"Could not decode '{asset_name}'\n{short_err}")
                 self._orig_card._info.config(
-                    text="Decode failed -- see above", fg=C["error"])
+                    text="Decode failed", fg=C["error"])
 
-    def _put_image(self, card, pil, key, bg):
+    def _bg_put_image(self, card, pil, key, bg):
         cv = card._cv
         cv.update_idletasks()
         cw = cv.winfo_width()  or 520
@@ -1297,12 +1605,34 @@ class App(tk.Tk):
         cv.create_image(cw // 2, ch // 2, image=tk_img, anchor="center")
         (self._orig_tk if key == "orig" else self._new_tk)[bg] = tk_img
 
-    def _on_resize(self, cv, card):
+    def _on_bg_resize(self, cv, card):
         bg = self._selected_bg()
         if card is self._orig_card and bg in self._orig_pil:
-            self._put_image(self._orig_card, self._orig_pil[bg], "orig", bg)
+            self._bg_put_image(self._orig_card, self._orig_pil[bg], "orig", bg)
         elif card is self._new_card and bg in self._new_pil:
-            self._put_image(self._new_card, self._new_pil[bg], "new", bg)
+            self._bg_put_image(self._new_card, self._new_pil[bg], "new", bg)
+        else:
+            # Redraw placeholder at the new correct canvas size
+            ph = getattr(card, "_ph_text", "")
+            if ph:
+                self._bg_placeholder(cv, ph)
+            else:
+                self._bg_refresh_panels()
+
+    def _bg_placeholder(self, cv: tk.Canvas, text: str):
+        cv.update_idletasks()
+        w = cv.winfo_width()
+        h = cv.winfo_height()
+        if w < 20: w = 520
+        if h < 20: h = 295
+        cv.delete("all")
+        cv.create_rectangle(1, 1, w-1, h-1, outline=C["border"], fill=C["bg"])
+        cv.create_text(w//2, h//2, text=text, fill=C["text_dim"], font=FT, width=w-40)
+        # Remember the text on the card for resize redraws
+        for card in (self._orig_card, self._new_card):
+            if hasattr(card, "_cv") and card._cv is cv:
+                card._ph_text = text
+                break
 
     def _placeholder(self, cv: tk.Canvas, text: str):
         cv.delete("all")
@@ -1387,24 +1717,23 @@ class App(tk.Tk):
         _save_profiles(self._profiles)
         self._new_pil[bg] = img
         self._new_tk.pop(bg, None)
-        self._put_image(self._new_card, img, "new", bg)
+        self._bg_put_image(self._new_card, img, "new", bg)
         self._new_card._info.config(
             text=f"{iw}×{ih}  ✓  |  {Path(path).name}", fg=C["success"])
-        self._refresh_tree()
+        self._bg_refresh_tree()
         self._status(f"Replacement set for '{bg}'.")
 
     def _act_clear_replacement(self):
         if self._is_default_profile():
-            return  # Default profile has no replacements to clear
+            return
         bg   = self._selected_bg()
-        reps = self._active_prof.get("replacements", {})
-        reps.pop(bg, None)
+        self._active_prof.get("replacements", {}).pop(bg, None)
         _save_profiles(self._profiles)
         self._new_pil.pop(bg, None)
         self._new_tk.pop(bg, None)
-        self._placeholder(self._new_card._cv, "No replacement selected")
+        self._bg_placeholder(self._new_card._cv, "No replacement selected")
         self._new_card._info.config(text="")
-        self._refresh_tree()
+        self._bg_refresh_tree()
         self._status(f"Cleared replacement for '{bg}'.")
 
     def _act_apply_all(self):
@@ -1412,14 +1741,9 @@ class App(tk.Tk):
             messagebox.showwarning("No folder",
                 "Select and scan a Clone Hero_Data folder first.")
             return
-        # Block saving from the Default profile
         if self._is_default_profile():
-            answer = messagebox.askyesno(
-                "Create a profile first",
-                "You are on the read-only Default profile.\n\n"
-                "You must save your changes to a named profile.\n\n"
-                "Create a new profile now?")
-            if answer:
+            if messagebox.askyesno("Create a profile first",
+                    "You are on the read-only Default profile.\nCreate a new profile now?"):
                 self._profile_new()
             return
         reps = self._active_prof.get("replacements", {})
@@ -1427,81 +1751,55 @@ class App(tk.Tk):
             messagebox.showwarning("Nothing to apply",
                 "Set at least one replacement image first.")
             return
-
-        # Safety: backups must exist before we overwrite anything in-place
         if not self._am.has_full_backup():
             messagebox.showerror("No backup",
-                "Backups have not been created yet.\n\n"
-                "Reload the folder to trigger automatic backup creation.")
+                "Backups have not been created yet.\nReload the folder to trigger backup creation.")
             return
-
-        summary = []
-        skipped = []
+        summary = []; skipped = []
         for bg, img_path in reps.items():
             an       = self._asset_cache.get(bg)
             src_file = self._am.source_file(an) if an else None
             if an and os.path.isfile(img_path):
                 label = Path(src_file).name if src_file else "?"
-                summary.append("  {}  ->  {}  ({})".format(
-                    bg, Path(img_path).name, label))
+                summary.append("  {}  ->  {}  ({})".format(bg, Path(img_path).name, label))
             else:
                 reason = "texture not found" if not an else "image file missing"
                 skipped.append("  {}  ({})".format(bg, reason))
-
         if not summary:
             messagebox.showwarning("Nothing applicable",
-                "None of the replacements can be applied.\n\n" +
-                "\n".join(skipped))
+                "None of the replacements can be applied.\n\n" + "\n".join(skipped))
             return
-
         msg = "\n".join(summary)
-        if skipped:
-            msg += "\n\nSkipped:\n" + "\n".join(skipped)
-
+        if skipped: msg += "\n\nSkipped:\n" + "\n".join(skipped)
         if not messagebox.askyesno("Apply & Save in-place",
                 "Apply these replacements directly to Clone Hero_Data:\n\n" +
                 msg + "\n\nOriginals are backed up in _CH_BG_Backups.\nProceed?"):
             return
-
-        self._status("Applying...")
-        self.update_idletasks()
+        self._status("Applying\u2026"); self.update_idletasks()
         self._apply_btn.config(state="disabled")
 
         def worker():
-            errors  = []
-            applied = 0
-            _log("\n=== WRITE SESSION START ({} replacements) ===".format(len(reps)))
+            errors = []; applied = 0
             for bg, img_path in reps.items():
                 an = self._asset_cache.get(bg)
-                if not an:
-                    errors.append("'{}': no matching texture found".format(bg))
-                    continue
-                if not os.path.isfile(img_path):
-                    errors.append("'{}': image missing".format(bg))
-                    continue
+                if not an: errors.append(f"'{bg}': no matching texture found"); continue
+                if not os.path.isfile(img_path): errors.append(f"'{bg}': image missing"); continue
                 try:
                     pil = Image.open(img_path).convert("RGBA")
                     ok  = self._am.import_image(an, pil)
-                    if ok:
-                        applied += 1
-                    else:
-                        errors.append("'{}': import_image returned False".format(bg))
+                    if ok: applied += 1
+                    else: errors.append(f"'{bg}': import_image returned False")
                 except Exception as ex:
-                    errors.append("'{}': {}".format(bg, ex))
-
+                    errors.append(f"'{bg}': {ex}")
             if applied == 0:
                 def fail():
                     self._apply_btn.config(state="normal")
                     self._status("Apply failed.")
                     messagebox.showerror("Apply failed",
-                        "No textures could be written.\n\nErrors:\n" +
-                        "\n".join(errors))
-                self.after(0, fail)
-                return
-
+                        "No textures could be written.\n\nErrors:\n" + "\n".join(errors))
+                self.after(0, fail); return
             saved, save_errors = self._am.save_modified()
             errors.extend(save_errors)
-
             def done():
                 self._apply_btn.config(state="normal")
                 if saved:
@@ -1512,9 +1810,7 @@ class App(tk.Tk):
                         "Applied {} texture(s).\n\nModified:\n{}\n\n"
                         "Restart Clone Hero to see the changes.{}".format(
                             applied, file_list, extra))
-                    # Clear orig preview cache so it reloads fresh next time
-                    self._orig_pil.clear()
-                    self._orig_tk.clear()
+                    self._orig_pil.clear(); self._orig_tk.clear()
                 else:
                     self._status("Save FAILED.")
                     messagebox.showerror("Save failed",
