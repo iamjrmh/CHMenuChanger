@@ -7,6 +7,12 @@ Swap out Clone Hero's menu background textures without touching a single config 
 
 ---
 
+## ⚠️ THIS REPO IS THE STANDALONE VERSION AND MAY BE OUT OF DATE.
+
+For the most up-to-date Clone Hero modding programs, check out my AIO [CHSuite.](https://github.com/iamjrmh/CHSuite) All future updates to my programs will be through here first. Thank you!
+
+---
+
 ## ✅ Clone Hero Launcher - Handled Automatically
 
 The Clone Hero launcher used to reset your game files back to default after every launch, undoing any background changes made with this tool.
