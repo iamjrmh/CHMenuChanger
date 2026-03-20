@@ -51,7 +51,7 @@ except Exception:
 # ---------------------------------------------------------------------------
 # Icon path
 # ---------------------------------------------------------------------------
-ICON_PATH = r"E:\Downloads\JURMRWEED.ico"
+ICON_PATH = r"JURMRWEED.ico"
 if not os.path.isfile(ICON_PATH):
     print(f"  WARNING: icon not found at {ICON_PATH!r} -- building without icon.")
     icon_line = "    # icon not found at build time"
